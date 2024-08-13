@@ -24,7 +24,7 @@
 		return
 	if(used)
 		return
-	if(ckey_whitelist && !(lowertext(user.ckey) in ckey_whitelist))
+	if(ckey_whitelist && !(LOWER_TEXT(user.ckey) in ckey_whitelist))
 		alert(user, "Sorry, This spawner is not for you!", "", "Ok")
 		return
 	if(is_banned_from(user.ckey, BAN_GHOST_ROLE_SPAWNER))
@@ -127,7 +127,8 @@
 					equipped.forceMove(get_turf(H))
 
 	if(gets_loadout)
-		for(var/datum/loadout_item/item as anything in loadout_list_to_datums(H?.client?.prefs?.loadout_list))
+		var/list/loadout = loadout_list_to_datums(H.client?.prefs?.read_preference(/datum/preference/loadout))
+		for(var/datum/loadout_item/item as anything in loadout)
 			item.post_equip_item(H.client?.prefs, H)
 
 	//Override access of the ID card here

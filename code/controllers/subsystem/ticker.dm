@@ -26,7 +26,7 @@ SUBSYSTEM_DEF(ticker)
 
 	var/list/datum/mind/minds = list() //The characters in the game. Used for objective tracking.
 
-	var/delay_end = FALSE //if set true, the round will not restart on it's own
+	var/delay_end = FALSE //if set true, the round will not restart on its own
 	var/admin_delay_notice = "" //a message to display to anyone who tries to restart the world after a delay
 	var/ready_for_reboot = FALSE //all roundend preparation done with, all that's left is reboot
 
@@ -92,7 +92,7 @@ SUBSYSTEM_DEF(ticker)
 	var/use_rare_music = prob(1)
 
 	for(var/S in provisional_title_music)
-		var/lower = lowertext(S)
+		var/lower = LOWER_TEXT(S)
 		var/list/L = splittext(lower,"+")
 		switch(L.len)
 			if(3) //rare+MAP+sound.ogg or MAP+rare.sound.ogg -- Rare Map-specific sounds
@@ -116,7 +116,7 @@ SUBSYSTEM_DEF(ticker)
 	for(var/S in music)
 		var/list/L = splittext(S,".")
 		if(L.len >= 2)
-			var/ext = lowertext(L[L.len]) //pick the real extension, no 'honk.ogg.exe' nonsense here
+			var/ext = LOWER_TEXT(L[L.len]) //pick the real extension, no 'honk.ogg.exe' nonsense here
 			if(byond_sound_formats[ext])
 				continue
 		music -= S
@@ -290,14 +290,14 @@ SUBSYSTEM_DEF(ticker)
 
 	round_start_time = world.time //otherwise round_start_time would be 0 for the signals
 	SEND_SIGNAL(src, COMSIG_TICKER_ROUND_STARTING, world.time)
-	real_round_start_time = REALTIMEOFDAY //NOVA EDIT ADDITION
-	SSautotransfer.new_shift(real_round_start_time) //NOVA EDIT ADDITION
+	real_round_start_time = REALTIMEOFDAY // NOVA EDIT ADDITION
+	SSautotransfer.new_shift(real_round_start_time) // NOVA EDIT ADDITION
 
 	log_world("Game start took [(world.timeofday - init_start)/10]s")
 	INVOKE_ASYNC(SSdbcore, TYPE_PROC_REF(/datum/controller/subsystem/dbcore,SetRoundStart))
 
-	to_chat(world, span_notice("<B>Welcome to [station_name()], enjoy your stay!</B>"))
-	alert_sound_to_playing(sound(SSstation.announcer.get_rand_welcome_sound())) //NOVA EDIT CHANGE
+	to_chat(world, span_notice(span_bold("Welcome to [station_name()], enjoy your stay!")))
+	alert_sound_to_playing(sound(SSstation.announcer.get_rand_welcome_sound())) // NOVA EDIT CHANGE - ORIGINAL: SEND_SOUND(world, sound(SSstation.announcer.get_rand_welcome_sound()))
 
 	current_state = GAME_STATE_PLAYING
 	Master.SetRunLevel(RUNLEVEL_GAME)
@@ -451,7 +451,8 @@ SUBSYSTEM_DEF(ticker)
 
 		//NOVA EDIT ADDITION
 		if(ishuman(new_player_living))
-			for(var/datum/loadout_item/item as anything in loadout_list_to_datums(new_player_mob.client?.prefs?.loadout_list))
+			var/list/loadout = loadout_list_to_datums(new_player_mob.client?.prefs?.read_preference(/datum/preference/loadout))
+			for(var/datum/loadout_item/item as anything in loadout)
 				if (item.restricted_roles && length(item.restricted_roles) && !(player_assigned_role.title in item.restricted_roles))
 					continue
 				item.post_equip_item(new_player_mob.client?.prefs, new_player_living)
@@ -742,6 +743,13 @@ SUBSYSTEM_DEF(ticker)
 
 	to_chat(world, span_boldannounce("Rebooting World in [DisplayTimeText(delay)]. [reason]"))
 
+	var/statspage = CONFIG_GET(string/roundstatsurl)
+	var/gamelogloc = CONFIG_GET(string/gamelogurl)
+	if(statspage)
+		to_chat(world, span_info("Round statistics and logs can be viewed <a href=\"[statspage][GLOB.round_id]\">at this website!</a>"))
+	else if(gamelogloc)
+		to_chat(world, span_info("Round logs can be located <a href=\"[gamelogloc]\">at this website!</a>"))
+
 	var/start_wait = world.time
 	UNTIL(round_end_sound_sent || (world.time - start_wait) > (delay * 2)) //don't wait forever
 	sleep(delay - (world.time - start_wait))
@@ -751,13 +759,6 @@ SUBSYSTEM_DEF(ticker)
 		return
 	if(end_string)
 		end_state = end_string
-
-	var/statspage = CONFIG_GET(string/roundstatsurl)
-	var/gamelogloc = CONFIG_GET(string/gamelogurl)
-	if(statspage)
-		to_chat(world, span_info("Round statistics and logs can be viewed <a href=\"[statspage][GLOB.round_id]\">at this website!</a>"))
-	else if(gamelogloc)
-		to_chat(world, span_info("Round logs can be located <a href=\"[gamelogloc]\">at this website!</a>"))
 
 	log_game(span_boldannounce("Rebooting World. [reason]"))
 

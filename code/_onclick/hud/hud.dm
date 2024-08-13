@@ -210,7 +210,7 @@ GLOBAL_LIST_INIT(available_erp_ui_styles, list(
 
 	for(var/group_key as anything in master_groups)
 		var/datum/plane_master_group/group = master_groups[group_key]
-		group.transform_lower_turfs(src, current_plane_offset)
+		group.build_planes_offset(src, current_plane_offset)
 
 /datum/hud/proc/should_use_scale()
 	return should_sight_scale(mymob.sight)
@@ -229,10 +229,9 @@ GLOBAL_LIST_INIT(available_erp_ui_styles, list(
 	current_plane_offset = new_offset
 
 	SEND_SIGNAL(src, COMSIG_HUD_OFFSET_CHANGED, old_offset, new_offset)
-	if(should_use_scale())
-		for(var/group_key as anything in master_groups)
-			var/datum/plane_master_group/group = master_groups[group_key]
-			group.transform_lower_turfs(src, new_offset)
+	for(var/group_key as anything in master_groups)
+		var/datum/plane_master_group/group = master_groups[group_key]
+		group.build_planes_offset(src, new_offset)
 
 /datum/hud/Destroy()
 	if(mymob.hud_used == src)
@@ -270,11 +269,10 @@ GLOBAL_LIST_INIT(available_erp_ui_styles, list(
 	alien_plasma_display = null
 	alien_queen_finder = null
 	combo_display = null
-
-	//NOVA EDIT START - SKYRAT HUD
+	//NOVA EDIT ADDITION START - NOVA HUD
 	ammo_counter = null
 	wanted_lvl = null
-	// NOVA EDIT END - SKYRAT HUD
+	// NOVA EDIT ADDITION END - NOVA HUD
 
 	QDEL_LIST_ASSOC_VAL(master_groups)
 	QDEL_LIST_ASSOC_VAL(plane_master_controllers)

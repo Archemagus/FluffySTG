@@ -1,4 +1,4 @@
-//Baseline portable generator. Has all the default handling. Not intended to be used on it's own (since it generates unlimited power).
+//Baseline portable generator. Has all the default handling. Not intended to be used on its own (since it generates unlimited power).
 /obj/machinery/power/port_gen
 	name = "portable generator"
 	desc = "A portable generator for emergency backup power."
@@ -98,7 +98,7 @@
 	var/obj/S = sheet_path
 	sheet_name = initial(S.name)
 
-/obj/machinery/power/port_gen/pacman/Destroy()
+/obj/machinery/power/port_gen/pacman/on_deconstruction(disassembled)
 	DropFuel()
 	return ..()
 

@@ -81,7 +81,7 @@
 	fire = 100
 	acid = 70
 
-/obj/machinery/atmospherics/LateInitialize()
+/obj/machinery/atmospherics/post_machine_initialize()
 	. = ..()
 	update_name()
 
@@ -301,8 +301,8 @@
  * * given_layer - the piping_layer we are checking
  */
 /obj/machinery/atmospherics/proc/connection_check(obj/machinery/atmospherics/target, given_layer)
-	//check if the target & src connect in the same direction
-	if(!((initialize_directions & get_dir(src, target)) && (target.initialize_directions & get_dir(target, src))))
+	//if target is not multiz then we have to check if the target & src connect in the same direction
+	if(!istype(target, /obj/machinery/atmospherics/pipe/multiz) && !((initialize_directions & get_dir(src, target)) && (target.initialize_directions & get_dir(target, src))))
 		return FALSE
 
 	//both target & src can't be connected either way
@@ -327,7 +327,10 @@
 		return FALSE
 
 	//if the target is not in the same piping layer & it does not have the all layer connection flag[which allows it to be connected regardless of layer] then we are out
-	if(target.piping_layer != given_layer && !(target.pipe_flags & PIPING_ALL_LAYER))
+	if(target.pipe_flags & PIPING_DISTRO_AND_WASTE_LAYERS)
+		if(ISODD(given_layer))
+			return FALSE
+	else if(target.piping_layer != given_layer && !(target.pipe_flags & PIPING_ALL_LAYER))
 		return FALSE
 
 	//if the target does not have the same color and it does not have all color connection flag[which allows it to be connected regardless of color] & one of the pipes is not gray[allowing for connection regardless] then we are out
@@ -607,11 +610,6 @@
 	animate(our_client, pixel_x = 0, pixel_y = 0, time = 0.05 SECONDS)
 	our_client.move_delay = world.time + 0.05 SECONDS
 
-/obj/machinery/atmospherics/AltClick(mob/living/L)
-	if(vent_movement & VENTCRAWL_ALLOWED && istype(L))
-		L.handle_ventcrawl(src)
-		return
-	return ..()
 
 /**
  * Getter of a list of pipenets
@@ -671,7 +669,7 @@
 	SET_PLANE_EXPLICIT(cap_overlay, initial(plane), our_turf)
 
 	cap_overlay.color = pipe_color
-	cap_overlay.layer = layer
+	cap_overlay.layer = initial(layer)
 	cap_overlay.icon_state = "[bitfield]_[piping_layer]"
 
 	cap_overlay.forceMove(our_turf)

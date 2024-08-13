@@ -6,6 +6,7 @@
 
 /datum/emote
 	cooldown = EMOTE_DELAY
+	var/muzzle_ignore = FALSE
 
 //Disables the custom emote blacklist from TG that normally applies to slimes.
 /datum/emote/living/custom
@@ -61,11 +62,21 @@
 		return 'modular_nova/modules/emotes/sound/emotes/female/female_sneeze.ogg'
 	return
 
-/datum/emote/flip/can_run_emote(mob/user, status_check, intentional)
-	if(intentional && (!HAS_TRAIT(user, TRAIT_FREERUNNING) && !HAS_TRAIT(user, TRAIT_STYLISH)) && !isobserver(user))
-		user.balloon_alert(user, "not nimble enough!")
-		return FALSE
-	return ..()
+/datum/emote/living/yawn
+	message_robot = "synthesizes a yawn."
+	message_AI = "synthesizes a yawns."
+
+/datum/emote/living/sniff/run_emote(mob/user, params, type_override, intentional)
+	. = ..()
+	var/turf/open/current_turf = get_turf(user)
+	if(istype(current_turf) && current_turf.pollution)
+		if(iscarbon(user))
+			var/mob/living/carbon/carbon_user = user
+			if(carbon_user.internal) //Breathing from internals means we cant smell
+				return
+			carbon_user.next_smell = world.time + SMELL_COOLDOWN
+		current_turf.pollution.smell_act(user)
+
 
 /datum/emote/living/peep
 	key = "peep"
@@ -89,7 +100,6 @@
 	message = "snaps twice."
 	message_param = "snaps twice at %t."
 	emote_type = EMOTE_AUDIBLE
-	muzzle_ignore = TRUE
 	hands_use_check = TRUE
 	vary = TRUE
 	sound = 'modular_nova/modules/emotes/sound/voice/snap2.ogg'
@@ -100,7 +110,6 @@
 	message = "snaps thrice."
 	message_param = "snaps thrice at %t."
 	emote_type = EMOTE_AUDIBLE
-	muzzle_ignore = TRUE
 	hands_use_check = TRUE
 	vary = TRUE
 	sound = 'modular_nova/modules/emotes/sound/voice/snap3.ogg'
@@ -112,6 +121,7 @@
 	emote_type = EMOTE_AUDIBLE
 	vary = TRUE
 	sound = 'modular_nova/modules/emotes/sound/voice/awoo.ogg'
+	sound_wall_ignore = TRUE
 
 /datum/emote/living/nya
 	key = "nya"
@@ -160,12 +170,14 @@
 	emote_type = EMOTE_AUDIBLE
 	vary = TRUE
 	sound = 'modular_nova/modules/emotes/sound/voice/bark2.ogg'
+	sound_wall_ignore = TRUE
 
 /datum/emote/living/squish
 	key = "squish"
 	key_third_person = "squishes"
 	message = "squishes!"
 	emote_type = EMOTE_AUDIBLE
+	muzzle_ignore = TRUE
 	vary = TRUE
 	sound = 'modular_nova/modules/emotes/sound/voice/slime_squish.ogg'
 
@@ -178,13 +190,18 @@
 	sound = 'modular_nova/modules/emotes/sound/emotes/meow.ogg'
 
 /datum/emote/living/hiss
-	key = "hiss1"
+	key = "hiss"
 	key_third_person = "hisses"
 	message = "hisses!"
 	emote_type = EMOTE_AUDIBLE
 	mob_type_allowed_typecache = list(/mob/living/carbon, /mob/living/silicon/pai)
 	vary = TRUE
-	sound = 'modular_nova/modules/emotes/sound/emotes/hiss.ogg'
+
+/datum/emote/living/hiss/get_sound(mob/living/user)
+	if(isxenohybrid(user))
+		return SFX_HISS
+	else
+		return 'modular_nova/modules/emotes/sound/emotes/hiss.ogg'
 
 /datum/emote/living/chitter
 	key = "chitter"
@@ -209,6 +226,7 @@
 
 /datum/emote/living/sniff
 	vary = TRUE
+	muzzle_ignore = TRUE
 
 /datum/emote/living/sniff/get_sound(mob/living/user)
 	if(iscarbon(user))
@@ -219,6 +237,10 @@
 
 /datum/emote/living/gasp/get_sound(mob/living/user)
 	if(iscarbon(user))
+		if(isxenohybrid(user))
+			return pick('sound/voice/lowHiss2.ogg',
+						'sound/voice/lowHiss3.ogg',
+						'sound/voice/lowHiss4.ogg')
 		if(user.gender == MALE)
 			return pick('modular_nova/modules/emotes/sound/emotes/male/gasp_m1.ogg',
 						'modular_nova/modules/emotes/sound/emotes/male/gasp_m2.ogg',
@@ -252,7 +274,6 @@
 	key = "clap"
 	key_third_person = "claps"
 	message = "claps."
-	muzzle_ignore = TRUE
 	hands_use_check = TRUE
 	emote_type = EMOTE_AUDIBLE
 	audio_cooldown = 5 SECONDS
@@ -265,7 +286,7 @@
 				'modular_nova/modules/emotes/sound/emotes/clap3.ogg',
 				'modular_nova/modules/emotes/sound/emotes/clap4.ogg')
 
-/datum/emote/living/clap/can_run_emote(mob/living/carbon/user, status_check = TRUE , intentional)
+/datum/emote/living/clap/can_run_emote(mob/living/carbon/user, status_check = TRUE , intentional, params)
 	if(user.usable_hands < 2)
 		return FALSE
 	return ..()
@@ -275,7 +296,6 @@
 	key_third_person = "claps once"
 	message = "claps once."
 	emote_type = EMOTE_AUDIBLE
-	muzzle_ignore = TRUE
 	hands_use_check = TRUE
 	vary = TRUE
 	mob_type_allowed_typecache = list(/mob/living/carbon, /mob/living/silicon/pai)
@@ -284,7 +304,7 @@
 	return pick('modular_nova/modules/emotes/sound/emotes/claponce1.ogg',
 				'modular_nova/modules/emotes/sound/emotes/claponce2.ogg')
 
-/datum/emote/living/clap1/can_run_emote(mob/living/carbon/user, status_check = TRUE , intentional)
+/datum/emote/living/clap1/can_run_emote(mob/living/carbon/user, status_check = TRUE , intentional, params)
 	if(user.usable_hands < 2)
 		return FALSE
 	return ..()
@@ -368,12 +388,6 @@
 	emote_type = EMOTE_AUDIBLE
 	vary = TRUE
 	sound = 'modular_nova/modules/emotes/sound/voice/caw2.ogg'
-
-/datum/emote/living/whistle
-	key = "whistle"
-	key_third_person = "whistles"
-	message = "whistles."
-	emote_type = EMOTE_AUDIBLE
 
 /datum/emote/living/blep
 	key = "blep"
@@ -490,6 +504,7 @@
 	key_third_person = "purrs!"
 	message = "purrs!"
 	emote_type = EMOTE_AUDIBLE
+	muzzle_ignore = TRUE
 	vary = TRUE
 	sound = 'modular_nova/modules/emotes/sound/voice/raptor_purr.ogg'
 
@@ -498,6 +513,7 @@
 	key_third_person = "purrs!"
 	message = "purrs!"
 	emote_type = EMOTE_AUDIBLE
+	muzzle_ignore = TRUE
 	vary = TRUE
 	sound = 'modular_nova/modules/emotes/sound/voice/feline_purr.ogg'
 
@@ -516,6 +532,32 @@
 	emote_type = EMOTE_AUDIBLE
 	vary = TRUE
 	sound = 'modular_nova/modules/emotes/sound/voice/goose_honk.ogg'
+	sound_wall_ignore = TRUE
+
+/datum/emote/living/mggaow
+	key = "mggaow"
+	key_third_person = "meows loudly"
+	message = "meows loudly!"
+	emote_type = EMOTE_AUDIBLE
+	vary = TRUE
+	sound = 'modular_nova/modules/emotes/sound/voice/mggaow.ogg'
+	sound_wall_ignore = TRUE
+
+/datum/emote/living/mrrp
+	key = "mrrp"
+	key_third_person = "mrrps"
+	message = "mrrps!"
+	emote_type = EMOTE_AUDIBLE
+	vary = TRUE
+	sound = 'modular_nova/modules/emotes/sound/voice/mrrp.ogg'
+
+/datum/emote/living/prbt
+	key = "prbt"
+	key_third_person = "prbts!"
+	message = "prbts!"
+	emote_type = EMOTE_AUDIBLE
+	vary = TRUE
+	sound = 'modular_nova/modules/emotes/sound/voice/prbt.ogg'
 
 /datum/emote/living/gnash
 	key = "gnash"
@@ -530,6 +572,7 @@
 	key_third_person = "thumps"
 	message = "thumps their foot!"
 	emote_type = EMOTE_AUDIBLE
+	muzzle_ignore = TRUE
 	vary = TRUE
 	sound = 'sound/effects/glassbash.ogg'
 
@@ -538,5 +581,22 @@
 	key_third_person = "rapidly flutters their wings!"
 	message = "rapidly flutters their wings!"
 	emote_type = EMOTE_AUDIBLE
+	muzzle_ignore = TRUE
 	vary = TRUE
 	sound = 'sound/voice/moth/moth_flutter.ogg'
+
+/datum/emote/living/sigh_exasperated
+	key = "esigh" // short for exasperated sigh
+	key_third_person = "esighs"
+	message = "lets out an exasperated sigh."
+	emote_type = EMOTE_AUDIBLE
+
+/datum/emote/living/sigh_exasperated/get_sound(mob/living/user)
+	if(iscarbon(user))
+		if(user.gender == MALE)
+			return 'modular_nova/modules/emotes/sound/emotes/male/male_sigh_exasperated.ogg'
+		return 'modular_nova/modules/emotes/sound/emotes/female/female_sigh_exasperated.ogg'
+	return
+
+/datum/emote/living/surrender
+	muzzle_ignore = TRUE

@@ -113,7 +113,7 @@
 				continue // go home
 			if(initial(our_casing.harmful) && (!allowed_harmful && !hacked)) // if you hack it that's on you.
 				continue
-			if(initial(our_casing.advanced_print_req) && !allowed_advanced) // if it's got a funny function (hello, AP!) and we're not good for it yet,
+			if(initial(our_casing.advanced_print_req) && !allowed_advanced) // if its got a funny function (hello, AP!) and we're not good for it yet,
 				continue // no
 		if(initial(our_casing.projectile_type) == null) // spent casing subtypes >:(
 			continue
@@ -385,12 +385,12 @@
 		error_type = "good"
 		return
 
-	updateDialog()
+	SStgui.update_uis(src)
 
 	timer_id = addtimer(CALLBACK(src, PROC_REF(fill_round), casing_type), time_per_round, TIMER_STOPPABLE)
 
 /obj/machinery/ammo_workbench/proc/ammo_fill_finish(successfully = TRUE)
-	updateDialog()
+	SStgui.update_uis(src)
 	if(successfully)
 		playsound(loc, 'sound/machines/ping.ogg', 40, TRUE)
 	else
@@ -467,7 +467,6 @@
 		. += "ammobench_loaded"
 
 /obj/machinery/ammo_workbench/Destroy()
-	QDEL_NULL(wires)
 	if(timer_id)
 		deltimer(timer_id)
 		timer_id = null

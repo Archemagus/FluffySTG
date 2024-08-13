@@ -77,7 +77,7 @@
 /obj/item/circuit_component/Initialize(mapload)
 	. = ..()
 	if(name == COMPONENT_DEFAULT_NAME)
-		name = "[lowertext(display_name)] [COMPONENT_DEFAULT_NAME]"
+		name = "[LOWER_TEXT(display_name)] [COMPONENT_DEFAULT_NAME]"
 	populate_options()
 	populate_ports()
 	if((circuit_flags & CIRCUIT_FLAG_INPUT_SIGNAL) && !trigger_input)
@@ -268,7 +268,7 @@
 
 		var/flags = SEND_SIGNAL(parent, COMSIG_CIRCUIT_PRE_POWER_USAGE, energy_usage_per_input)
 		if(!(flags & COMPONENT_OVERRIDE_POWER_USAGE))
-			var/obj/item/stock_parts/cell/cell = parent.get_cell()
+			var/obj/item/stock_parts/power_store/cell = parent.get_cell()
 			if(!cell?.use(energy_usage_per_input))
 				return FALSE
 
@@ -405,3 +405,14 @@
  */
 /obj/item/circuit_component/proc/unregister_usb_parent(atom/movable/shell)
 	return
+
+/**
+ * Called when a circuit component requests to send Ntnet data signal.
+ *
+ * Arguments:
+ * * port - The required list port needed by the Ntnet receive
+ * * key - The encryption key
+ * * signal_type - The signal type used for sending this global signal (optional, default is COMSIG_GLOB_CIRCUIT_NTNET_DATA_SENT)
+ */
+/obj/item/circuit_component/proc/send_ntnet_data(datum/port/input/port, key, signal_type = COMSIG_GLOB_CIRCUIT_NTNET_DATA_SENT)
+	SEND_GLOBAL_SIGNAL(signal_type, list("data" = port.value, "enc_key" = key, "port" = WEAKREF(port)))

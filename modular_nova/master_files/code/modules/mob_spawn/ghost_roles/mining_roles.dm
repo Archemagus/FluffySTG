@@ -29,6 +29,11 @@
 	restricted_species = list(/datum/species/lizard/ashwalker)
 	random_appearance = FALSE
 
+/obj/effect/mob_spawn/ghost_role/human/ash_walker/special(mob/living/carbon/human/spawned_human)
+	spawned_human.fully_replace_character_name(null, spawned_human.generate_random_mob_name(TRUE))
+	quirks_enabled = TRUE // ghost role quirks
+	. = ..()
+
 /// Listening Outpost
 
 /obj/effect/mob_spawn/ghost_role/human/lavaland_syndicate/comms/space
@@ -143,7 +148,7 @@
 	var/jobtype = /datum/job/interdyne_planetary_base
 
 /datum/outfit/interdyne_planetary_base/post_equip(mob/living/carbon/human/syndicate, visualsOnly = FALSE)
-	syndicate.faction |= ROLE_SYNDICATE
+	syndicate.faction |= ROLE_INTERDYNE_PLANETARY_BASE
 
 	var/obj/item/card/id/id_card = syndicate.wear_id
 	if(istype(id_card))

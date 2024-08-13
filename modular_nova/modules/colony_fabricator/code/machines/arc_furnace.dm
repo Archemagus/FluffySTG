@@ -18,7 +18,6 @@
 	circuit = null
 	light_color = LIGHT_COLOR_BRIGHT_YELLOW
 	light_power = 10
-	obj_flags = CAN_BE_HIT | NO_DECONSTRUCTION
 	active_power_usage = BASE_MACHINE_ACTIVE_CONSUMPTION * 10 // This baby consumes so much power
 	/// The item we turn into when repacked
 	var/repacked_type = /obj/item/flatpacked_machine/arc_furnace
@@ -45,6 +44,16 @@
 	. = ..()
 	if(length(contents))
 		. += span_notice("It has <b>[contents[1]]</b> sitting in it.")
+
+// formerly NO_DECONSTRUCTION
+/obj/machinery/arc_furnace/default_deconstruction_screwdriver(mob/user, icon_state_open, icon_state_closed, obj/item/screwdriver)
+	return NONE
+
+/obj/machinery/arc_furnace/default_deconstruction_crowbar(obj/item/crowbar, ignore_panel, custom_deconstruct)
+	return NONE
+
+/obj/machinery/arc_furnace/default_pry_open(obj/item/crowbar, close_after_pry, open_density, closed_density)
+	return NONE
 
 /obj/machinery/arc_furnace/on_deconstruction(disassembled)
 	eject_contents()
@@ -98,14 +107,13 @@
 	if(isAI(user) && (machine_stat & NOPOWER))
 		return
 
-	usr.set_machine(src) // What does this even do??
 	switch(choice)
 		if(RADIAL_CHOICE_EJECT)
 			eject_contents()
 		if(RADIAL_CHOICE_USE)
 			smelt_it_up(user)
 
-/// Removes the first item in the contents list which should only ever be ore and if its not, we have problems
+/// Removes the first item in the contents list which should only ever be ore and if it's not, we have problems
 /obj/machinery/arc_furnace/proc/eject_contents()
 	if(operating)
 		return
@@ -119,7 +127,7 @@
 	thing_inside.forceMove(drop_location())
 	update_appearance()
 
-/// Starts the smelting process, checking if the machine has power or if its broken at all
+/// Starts the smelting process, checking if the machine has power or if it's broken at all
 /obj/machinery/arc_furnace/proc/smelt_it_up(mob/user)
 	if(machine_stat & (NOPOWER|BROKEN))
 		balloon_alert(user, "button doesn't respond")

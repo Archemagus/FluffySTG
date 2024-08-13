@@ -134,6 +134,16 @@
 	if(data["blood_DNA"])
 		bloodsplatter.add_blood_DNA(list(data["blood_DNA"] = data["blood_type"]))
 
+/datum/reagent/blood/get_taste_description(mob/living/taster)
+	if(isnull(taster))
+		return ..()
+	if(!HAS_TRAIT(taster, TRAIT_DETECTIVES_TASTE))
+		return ..()
+	var/blood_type = data?["blood_type"]
+	if(!blood_type)
+		return ..()
+	return list("[blood_type] type blood" = 1)
+
 /datum/reagent/consumable/liquidgibs
 	name = "Liquid Gibs"
 	color = "#CC4633"
@@ -343,18 +353,18 @@
 
 /datum/wound/pierce/bleed/on_saltwater(reac_volume, mob/living/carbon/carbies)
 	adjust_blood_flow(-0.06 * reac_volume, initial_flow * 0.6)
-	to_chat(carbies, span_notice("The salt water splashes over [lowertext(src)], soaking up the blood."))
+	to_chat(carbies, span_notice("The salt water splashes over [LOWER_TEXT(src)], soaking up the blood."))
 
 /datum/wound/slash/flesh/on_saltwater(reac_volume, mob/living/carbon/carbies)
 	adjust_blood_flow(-0.1 * reac_volume, initial_flow * 0.5)
-	to_chat(carbies, span_notice("The salt water splashes over [lowertext(src)], soaking up the blood."))
+	to_chat(carbies, span_notice("The salt water splashes over [LOWER_TEXT(src)], soaking up the blood."))
 
 /datum/wound/burn/flesh/on_saltwater(reac_volume)
 	// Similar but better stats from normal salt.
 	sanitization += VALUE_PER(0.6, 30) * reac_volume
 	infestation -= max(VALUE_PER(0.5, 30) * reac_volume, 0)
 	infestation_rate += VALUE_PER(0.07, 30) * reac_volume
-	to_chat(victim, span_notice("The salt water splashes over [lowertext(src)], soaking up the... miscellaneous fluids. It feels somewhat better afterwards."))
+	to_chat(victim, span_notice("The salt water splashes over [LOWER_TEXT(src)], soaking up the... miscellaneous fluids. It feels somewhat better afterwards."))
 	return
 
 /datum/reagent/water/holywater
@@ -730,7 +740,7 @@
 		//affected_mob.set_species(species_type) //ORIGINAL
 		affected_mob.set_species(species_type, TRUE, FALSE, null, null, null, null, TRUE) //NOVA EDIT CHANGE - CUSTOMIZATION
 		holder.del_reagent(type)
-		to_chat(affected_mob, span_warning("You've become \a [lowertext(initial(species_type.name))]!"))
+		to_chat(affected_mob, span_warning("You've become \a [LOWER_TEXT(initial(species_type.name))]!"))
 		return
 
 /datum/reagent/mutationtoxin/classic //The one from plasma on green slimes
@@ -892,7 +902,7 @@
 		return
 	to_chat(affected_mob, span_warning("<b>You grit your teeth in pain as your body rapidly mutates!</b>"))
 	affected_mob.visible_message("<b>[affected_mob]</b> suddenly transforms!")
-	randomize_human(affected_mob)
+	randomize_human_normie(affected_mob)
 
 /datum/reagent/aslimetoxin
 	name = "Advanced Mutation Toxin"
@@ -939,7 +949,7 @@
 	reagent_state = GAS
 	color = COLOR_GRAY
 	taste_mult = 0 // oderless and tasteless
-	ph = 9.2//It's acutally a huge range and very dependant on the chemistry but ph is basically a made up var in it's implementation anyways
+	ph = 9.2//It's acutally a huge range and very dependant on the chemistry but ph is basically a made up var in its implementation anyways
 	chemical_flags = REAGENT_CAN_BE_SYNTHESIZED
 
 
@@ -2222,10 +2232,10 @@
 
 	var/mob/living/carbon/human/exposed_human = exposed_mob
 	if(!HAS_TRAIT(exposed_human, TRAIT_SHAVED))
-		var/datum/sprite_accessory/facial_hair/picked_beard = pick(GLOB.facial_hairstyles_list)
+		var/datum/sprite_accessory/facial_hair/picked_beard = pick(SSaccessories.facial_hairstyles_list)
 		exposed_human.set_facial_hairstyle(picked_beard, update = FALSE)
 	if(!HAS_TRAIT(exposed_human, TRAIT_BALD))
-		var/datum/sprite_accessory/hair/picked_hair = pick(GLOB.hairstyles_list)
+		var/datum/sprite_accessory/hair/picked_hair = pick(SSaccessories.hairstyles_list)
 		exposed_human.set_hairstyle(picked_hair, update = TRUE)
 	to_chat(exposed_human, span_notice("Hair starts sprouting from your [HAS_TRAIT(exposed_human, TRAIT_BALD) ? "face" : "scalp"]."))
 
@@ -2696,7 +2706,7 @@
 /datum/reagent/metalgen
 	name = "Metalgen"
 	data = list("material"=null)
-	description = "A purple metal morphic liquid, said to impose it's metallic properties on whatever it touches."
+	description = "A purple metal morphic liquid, said to impose its metallic properties on whatever it touches."
 	color = "#b000aa"
 	taste_mult = 0 // oderless and tasteless
 	chemical_flags = REAGENT_NO_RANDOM_RECIPE
@@ -2801,7 +2811,7 @@
 		var/obj/item/bodypart/wounded_part = W.limb
 		if(wounded_part)
 			wounded_part.heal_damage(0.25 * REM * seconds_per_tick, 0.25 * REM * seconds_per_tick)
-		if(affected_mob.adjustStaminaLoss(-0.25 * REM * seconds_per_tick, updating_stamina = FALSE)) // the more wounds, the more stamina regen
+		if(affected_mob.adjustStaminaLoss(-1 * REM * seconds_per_tick, updating_stamina = FALSE)) // the more wounds, the more stamina regen
 			return UPDATE_MOB_HEALTH
 
 // unholy water, but for heretics.
@@ -2985,7 +2995,7 @@
 	. = ..()
 	var/need_mob_update
 	need_mob_update = kronkus_enjoyer.adjustOrganLoss(ORGAN_SLOT_HEART, 0.1)
-	need_mob_update += kronkus_enjoyer.adjustStaminaLoss(-2, updating_stamina = FALSE)
+	need_mob_update += kronkus_enjoyer.adjustStaminaLoss(-6, updating_stamina = FALSE)
 	if(need_mob_update)
 		return UPDATE_MOB_HEALTH
 

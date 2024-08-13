@@ -8,7 +8,7 @@
 /obj/item/clothing/under/syndicate/nova
 	icon = 'modular_nova/master_files/icons/obj/clothing/under/syndicate.dmi'
 	worn_icon = 'modular_nova/master_files/icons/mob/clothing/under/syndicate.dmi'
-	//These are pre-set for ease and reference, as syndie under items SHOULDNT have sensors and should have similar stats; also its better to start with adjust = false
+	//These are pre-set for ease and reference, as syndie under items SHOULDNT have sensors and should have similar stats; also it's better to start with adjust = false
 	has_sensor = NO_SENSORS
 	can_adjust = FALSE
 
@@ -184,6 +184,15 @@
 	if(current_skin && current_skin == RESKIN_CHARCOAL)
 		desc = "A non-descript and slightly suspicious looking skirtleneck."
 		inhand_icon_state = "bl_suit"
+
+
+/obj/item/clothing/under/syndicate/skirt/coldres
+	name = "insulated tactical turtleneck skirt"
+	desc = "A non-descript and slightly suspicious looking skirtleneck. The interior has been padded with special insulation for both warmth and protection."
+	armor_type = /datum/armor/clothing_under/syndicate/coldres
+	cold_protection = CHEST|GROIN|ARMS|LEGS
+	min_cold_protection_temperature = FIRE_SUIT_MIN_TEMP_PROTECT
+
 
 /*
 *	ENCLAVE

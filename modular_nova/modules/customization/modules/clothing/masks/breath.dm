@@ -38,17 +38,17 @@
 				to_chat(user, "You pull the balaclava up to cover your whole head.")
 				open = 0
 		user.update_body_parts()
-		user.update_inv_ears()
+		user.update_worn_ears()
 		user.update_worn_mask() //Updates mob icons
 
 /obj/item/clothing/mask/balaclavaadjust/attack_self(mob/user)
 	adjust_mask(user)
 
 /obj/item/clothing/mask/balaclavaadjust/verb/toggle()
-		set category = "Object"
-		set name = "Adjust Balaclava"
-		set src in usr
-		adjust_mask(usr)
+	set category = "Object"
+	set name = "Adjust Balaclava"
+	set src in usr
+	adjust_mask(usr)
 
 
 /obj/item/clothing/mask/balaclava/threehole

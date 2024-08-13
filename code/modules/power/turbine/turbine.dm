@@ -43,7 +43,7 @@
 	register_context()
 
 
-/obj/machinery/power/turbine/LateInitialize()
+/obj/machinery/power/turbine/post_machine_initialize()
 	. = ..()
 	activate_parts()
 
@@ -292,7 +292,7 @@
 	input_turf = null
 
 /**
- * transfer's gases from it's input turf to it's internal gas mix
+ * transfers gases from its input turf to its internal gas mix
  * Returns temperature of the gas mix absorbed only if some work was done
  */
 /obj/machinery/power/turbine/inlet_compressor/proc/compress_gases()

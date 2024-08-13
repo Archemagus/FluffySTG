@@ -9,6 +9,7 @@
 	flavour_text = "On the recently reclaimed Port Tarkon, You are tasked to help finish construction and carry on any tasks given by the site director. It may be best to look at your departmental noteboard. (OOC note: This ghost role was not designed with Plasmamen or Vox in mind. While there are some accommodations so that they can survive, it should be noted that they were not the focal point whilst designing Port Tarkon. The closet in the middle of the room above contains the 'accommodations' for those species.)"
 	important_text = "You are not to abandon Port Tarkon. Check other sleepers for alternative jobs. Listen to the Site Director and Ensign."
 	outfit = /datum/outfit/tarkon
+	faction = list(FACTION_TARKON)
 	spawner_job_path = /datum/job/tarkon
 	loadout_enabled = TRUE
 	quirks_enabled = TRUE
@@ -64,7 +65,7 @@
 	glasses = /obj/item/clothing/glasses/hud/diagnostic
 	id = /obj/item/card/id/advanced/tarkon/sci
 	id_trim = /datum/id_trim/away/tarkon/sci
-	r_pocket = /obj/item/stock_parts/cell/high
+	r_pocket = /obj/item/stock_parts/power_store/cell/high
 	l_pocket = /obj/item/card/id/away/tarkonrobo
 
 /obj/effect/mob_spawn/ghost_role/human/tarkon/med
@@ -201,7 +202,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/computer/cryopod/tarkon, 32)
 	var/boss_mob = /mob/living/basic/alien/queen/large
 	var/loot_drop = /obj/effect/mob_spawn/corpse/human/tarkon
 
-/obj/structure/spawner/tarkon_xenos/deconstruct(disassembled)
+/obj/structure/spawner/tarkon_xenos/atom_deconstruct(disassembled)
 	new /obj/effect/nest_break(loc, loot_drop, boss_mob)
 	return ..()
 

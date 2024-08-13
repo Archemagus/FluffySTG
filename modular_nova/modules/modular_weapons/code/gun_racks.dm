@@ -15,7 +15,7 @@
 
 /obj/structure/rack/gunrack/attackby(obj/item/attacking_item, mob/living/user, params)
 	var/list/modifiers = params2list(params)
-	if(attacking_item.tool_behaviour == TOOL_WRENCH && !(obj_flags & NO_DECONSTRUCTION) && LAZYACCESS(modifiers, RIGHT_CLICK))
+	if(attacking_item.tool_behaviour == TOOL_WRENCH && LAZYACCESS(modifiers, RIGHT_CLICK))
 		attacking_item.play_tool_sound(src)
 		deconstruct(TRUE)
 		return
@@ -36,7 +36,7 @@
 		RegisterSignal(incoming_weapon, COMSIG_ITEM_EQUIPPED, PROC_REF(item_picked_up))
 	incoming_weapon.transform = new_matrix
 
-/// Checks when something is leaving our turf, if its a gun then make sure to reset its transform so its not permanently rotated
+/// Checks when something is leaving our turf, if it's a gun then make sure to reset its transform so it's not permanently rotated
 /obj/structure/rack/gunrack/proc/on_exit(datum/source, atom/movable/leaving, direction)
 	SIGNAL_HANDLER
 

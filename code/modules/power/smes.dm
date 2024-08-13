@@ -13,6 +13,7 @@
 #define SMES_INPUTTING 8
 #define SMES_INPUT_ATTEMPT 9
 
+// NOVA EDIT COMMENT: Modularized Power change in modular_nova\master_files\code\modules\power\smes.dm
 /obj/machinery/power/smes
 	name = "power storage unit"
 	desc = "A high-capacity superconducting magnetic energy storage (SMES) unit."
@@ -23,7 +24,7 @@
 	can_change_cable_layer = TRUE
 
 	/// The charge capacity.
-	var/capacity = 50 * STANDARD_CELL_CHARGE // The board defaults with 5 high capacity power cells.
+	var/capacity = 50 * STANDARD_BATTERY_CHARGE // The board defaults with 5 high capacity batteries.
 	/// The current charge.
 	var/charge = 0
 
@@ -68,10 +69,10 @@
 	var/max_charge = 0
 	var/new_charge = 0
 	for(var/datum/stock_part/capacitor/capacitor in component_parts)
-		power_coefficient += capacitor.tier
+		power_coefficient += 2 ** (capacitor.tier - 1) // NOVA EDIT CHANGE - Original: power_coefficient += capacitor.tier
 	input_level_max = initial(input_level_max) * power_coefficient
 	output_level_max = initial(output_level_max) * power_coefficient
-	for(var/obj/item/stock_parts/cell/power_cell in component_parts)
+	for(var/obj/item/stock_parts/power_store/power_cell in component_parts)
 		max_charge += power_cell.maxcharge
 		new_charge += power_cell.charge
 	capacity = max_charge
@@ -112,55 +113,42 @@
 
 	//building and linking a terminal
 	if(istype(item, /obj/item/stack/cable_coil))
-		var/dir = get_dir(user,src)
-		if(dir & (dir-1))//we don't want diagonal click
-			return
-
-		if(terminal) //is there already a terminal ?
-			to_chat(user, span_warning("This SMES already has a power terminal!"))
-			return
-
-		if(!panel_open) //is the panel open ?
-			to_chat(user, span_warning("You must open the maintenance panel first!"))
-			return
-
-		var/turf/turf = get_turf(user)
-		if (turf.underfloor_accessibility < UNDERFLOOR_INTERACTABLE) //can we get to the underfloor?
-			to_chat(user, span_warning("You must first remove the floor plating!"))
-			return
-
-
-		var/obj/item/stack/cable_coil/cable = item
-		if(cable.get_amount() < 10)
-			to_chat(user, span_warning("You need more wires!"))
+		if(!can_place_terminal(user, item, silent = FALSE))
 			return
 
 		var/terminal_cable_layer
 		if(LAZYACCESS(params2list(params), RIGHT_CLICK))
 			var/choice = tgui_input_list(user, "Select Power Input Cable Layer", "Select Cable Layer", GLOB.cable_name_to_layer)
-			if(isnull(choice))
+			if(isnull(choice) \
+				|| !user.is_holding(item) \
+				|| !user.Adjacent(src) \
+				|| user.incapacitated() \
+				|| !can_place_terminal(user, item, silent = TRUE) \
+			)
 				return
 			terminal_cable_layer = GLOB.cable_name_to_layer[choice]
 
-		to_chat(user, span_notice("You start building the power terminal..."))
-		playsound(src.loc, 'sound/items/deconstruct.ogg', 50, TRUE)
+		user.visible_message(span_notice("[user.name] starts adding cables to [src]."))
+		balloon_alert(user, "adding cables...")
+		playsound(src, 'sound/items/deconstruct.ogg', 50, TRUE)
 
-		if(do_after(user, 2 SECONDS, target = src))
-			if(cable.get_amount() < 10 || !cable)
-				return
-			var/obj/structure/cable/connected_cable = turf.get_cable_node(terminal_cable_layer) //get the connecting node cable, if there's one
-			if (prob(50) && electrocute_mob(user, connected_cable, connected_cable, 1, TRUE)) //animate the electrocution if uncautious and unlucky
-				do_sparks(5, TRUE, src)
-				return
-			if(!terminal)
-				cable.use(10)
-				user.visible_message(span_notice("[user.name] builds a power terminal."),\
-					span_notice("You build the power terminal."))
-
-				//build the terminal and link it to the network
-				make_terminal(turf, terminal_cable_layer)
-				terminal.connect_to_network()
-				connect_to_network()
+		if(!do_after(user, 2 SECONDS, target = src))
+			return
+		if(!can_place_terminal(user, item, silent = TRUE))
+			return
+		var/obj/item/stack/cable_coil/cable = item
+		var/turf/turf = get_turf(user)
+		var/obj/structure/cable/connected_cable = turf.get_cable_node(terminal_cable_layer) //get the connecting node cable, if there's one
+		if (prob(50) && electrocute_mob(user, connected_cable, connected_cable, 1, TRUE)) //animate the electrocution if uncautious and unlucky
+			do_sparks(5, TRUE, src)
+			return
+		cable.use(10)
+		user.visible_message(span_notice("[user.name] adds cables to [src]"))
+		balloon_alert(user, "cables added")
+		//build the terminal and link it to the network
+		make_terminal(turf, terminal_cable_layer)
+		terminal.connect_to_network()
+		connect_to_network()
 		return
 
 	//crowbarring it !
@@ -174,6 +162,31 @@
 		return
 
 	return ..()
+
+/// Checks if we're in a valid state to place a terminal
+/obj/machinery/power/smes/proc/can_place_terminal(mob/living/user, obj/item/stack/cable_coil/installing_cable, silent = TRUE)
+	var/set_dir = get_dir(user, src)
+	if(set_dir & (set_dir - 1))//we don't want diagonal click
+		return FALSE
+
+	var/turf/terminal_turf = get_turf(user)
+	if(!panel_open)
+		if(!silent && user)
+			balloon_alert(user, "open the maintenance panel!")
+		return FALSE
+	if(terminal_turf.underfloor_accessibility < UNDERFLOOR_INTERACTABLE)
+		if(!silent && user)
+			balloon_alert(user, "remove the floor plating!")
+		return FALSE
+	if(terminal)
+		if(!silent && user)
+			balloon_alert(user, "already wired!")
+		return FALSE
+	if(installing_cable.get_amount() < 10)
+		if(!silent && user)
+			balloon_alert(user, "need ten lengths of cable!")
+		return FALSE
+	return TRUE
 
 /obj/machinery/power/smes/wirecutter_act(mob/living/user, obj/item/item)
 	//disassembling the terminal
@@ -191,7 +204,7 @@
 	return ..()
 
 /obj/machinery/power/smes/on_deconstruction(disassembled)
-	for(var/obj/item/stock_parts/cell/cell in component_parts)
+	for(var/obj/item/stock_parts/power_store/cell in component_parts)
 		cell.charge = (charge / capacity) * cell.maxcharge
 
 /obj/machinery/power/smes/Destroy()
@@ -420,20 +433,30 @@
 	outputting = output_attempt
 	output_level = rand(0, output_level_max)
 	input_level = rand(0, input_level_max)
-	charge -= STANDARD_CELL_CHARGE/severity
+	charge -= STANDARD_BATTERY_CHARGE/severity
 	if (charge < 0)
 		charge = 0
 	update_appearance()
 	log_smes()
 
+// Variant of SMES that starts with super power cells for higher longevity
+/obj/machinery/power/smes/super
+	name = "super capacity power storage unit"
+	desc = "A super-capacity superconducting magnetic energy storage (SMES) unit. Relatively rare, and typically installed in long-range outposts where minimal maintenance is expected."
+	circuit = /obj/item/circuitboard/machine/smes/super
+	capacity = 100 * STANDARD_BATTERY_CHARGE
+
+/obj/machinery/power/smes/super/full
+	charge = 100 * STANDARD_BATTERY_CHARGE
+
 /obj/machinery/power/smes/full
-	charge = 50 * STANDARD_CELL_CHARGE
+	charge = 50 * STANDARD_BATTERY_CHARGE
 
 /obj/machinery/power/smes/ship
-	charge = 20 * STANDARD_CELL_CHARGE
+	charge = 20 * STANDARD_BATTERY_CHARGE
 
 /obj/machinery/power/smes/engineering
-	charge = 50 * STANDARD_CELL_CHARGE // Engineering starts with some charge for singulo //sorry little one, singulo as engine is gone
+	charge = 50 * STANDARD_BATTERY_CHARGE // Engineering starts with some charge for singulo //sorry little one, singulo as engine is gone
 	output_level = 90 KILO WATTS
 
 /obj/machinery/power/smes/magical
