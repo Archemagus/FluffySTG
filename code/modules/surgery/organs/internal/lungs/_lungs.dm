@@ -593,7 +593,7 @@
  * * breather: A carbon mob that is using the lungs to breathe.
  */
 /obj/item/organ/internal/lungs/proc/check_breath(datum/gas_mixture/breath, mob/living/carbon/human/breather)
-	if(breather.status_flags & GODMODE)
+	if(HAS_TRAIT(breather, TRAIT_GODMODE))
 		breather.failed_last_breath = FALSE
 		breather.clear_alert(ALERT_NOT_ENOUGH_OXYGEN)
 		return FALSE
@@ -606,6 +606,12 @@
 		var/static/datum/gas_mixture/immutable/empty_breath = new(BREATH_VOLUME)
 		breath = empty_breath
 
+	// NOVA EDIT ADDITION - Akula breathing trait
+	if(is_species(breather, /datum/species/akula))
+		if(!breather.has_status_effect(/datum/status_effect/fire_handler/wet_stacks))
+			for(var/datum/gas/gas as anything in breath.gases)
+				breath.gases[gas][MOLES] = 0 //cant filter gas out of the air unless wet
+	// NOVA EDIT ADDITION END
 	// Indicates if there are moles of gas in the breath.
 	var/has_moles = breath.total_moles() != 0
 
