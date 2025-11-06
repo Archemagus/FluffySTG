@@ -304,6 +304,7 @@
 /obj/effect/turf_decal/siding/dark/corner{
 	dir = 4
 	},
+/obj/machinery/requests_console/auto_name/directional/north,
 /turf/open/floor/iron/chapel{
 	dir = 1
 	},
@@ -870,6 +871,7 @@
 	},
 /obj/structure/chair/comfy/black,
 /obj/machinery/firealarm/directional/west,
+/obj/machinery/requests_console/auto_name/directional/north,
 /turf/open/floor/wood/parquet,
 /area/station/service/library/garden)
 "hs" = (
@@ -1493,6 +1495,7 @@
 "mF" = (
 /obj/structure/table/wood,
 /obj/machinery/light/directional/north,
+/obj/machinery/requests_console/auto_name/directional/north,
 /turf/open/floor/wood/parquet,
 /area/station/service/library)
 "mH" = (
@@ -2057,6 +2060,7 @@
 	},
 /obj/structure/chair/comfy/black,
 /obj/machinery/firealarm/directional/east,
+/obj/machinery/requests_console/auto_name/directional/north,
 /turf/open/floor/wood/parquet,
 /area/station/service/library/garden)
 "rK" = (
@@ -2266,6 +2270,7 @@
 	},
 /obj/machinery/light/directional/east,
 /obj/machinery/newscaster/directional/south,
+/obj/machinery/requests_console/auto_name/directional/east,
 /turf/open/floor/iron/dark,
 /area/station/service/chapel/funeral)
 "tl" = (
@@ -5368,6 +5373,7 @@
 /obj/effect/turf_decal/stripes{
 	dir = 8
 	},
+/obj/machinery/requests_console/auto_name/directional/east,
 /turf/open/floor/iron/dark/smooth_edge{
 	dir = 8
 	},
@@ -6285,6 +6291,7 @@
 	dir = 4
 	},
 /obj/machinery/light/directional/north,
+/obj/machinery/requests_console/auto_name/directional/north,
 /turf/open/floor/wood/parquet,
 /area/station/service/library/lounge)
 "ZV" = (
